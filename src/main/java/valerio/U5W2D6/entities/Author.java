@@ -1,13 +1,11 @@
 package valerio.U5W2D6.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
@@ -15,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
 public class Author {
     @Id
@@ -27,5 +26,6 @@ public class Author {
     private String avatar;
 
     @OneToMany(mappedBy = "author")
+    @JsonIgnore
     private List<Blogpost> blogposts;
 }

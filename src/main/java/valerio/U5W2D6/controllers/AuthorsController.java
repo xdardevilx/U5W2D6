@@ -2,6 +2,7 @@ package valerio.U5W2D6.controllers;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import valerio.U5W2D6.entities.Author;
@@ -25,8 +26,8 @@ public class AuthorsController {
 
     // 2. - GET http://localhost:3001/authors
     @GetMapping("")
-    public List<Author> getAuthors() {
-        return authorsService.getAuthors();
+    public Page<Author> getAuthors(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sort) throws Exception {
+        return authorsService.getAuthors(page, size, sort);
     }
 
     // 3. - GET http://localhost:3001/authors/{id}

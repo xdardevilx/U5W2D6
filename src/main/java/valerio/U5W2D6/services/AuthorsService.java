@@ -1,8 +1,15 @@
 package valerio.U5W2D6.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import valerio.U5W2D6.entities.Author;
+import valerio.U5W2D6.exceptions.BadRequestExcepition;
 import valerio.U5W2D6.exceptions.NotFoundException;
+import valerio.U5W2D6.repositories.AuthorDAO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,58 +18,46 @@ import java.util.Random;
 
 @Service
 public class AuthorsService {
+    @Autowired
+    private AuthorDAO authorDAO;
 
-    private final List<Author> authors = new ArrayList<>();
+//    private final List<Author> authors = new ArrayList<>();
 
-    public Author save(Author author) {
-        Random rndm = new Random();
-        author.setId(rndm.nextInt());
-        author.setAvatar("https://ui-avatars.com/api/?name="+ author.getName() + "+" + author.getSurname());
-        this.authors.add(author);
-        return author;
+    public Author save(Author newAuthor) {
+        this.authorDAO.findByEmail(newAuthor.getEmail()).ifPresent(
+                author -> {
+                    throw new BadRequestExcepition("L'email " + newAuthor.getEmail() + " è già in uso!");
+                }
+        );
+        newAuthor.setAvatar("https://ui-avatars.com/api/?name="+ newAuthor.getName() + "+" + newAuthor.getSurname());
+        this.authorDAO.save(newAuthor);
+        return newAuthor;
     }
 
-    public List<Author> getAuthors() {
-        return this.authors;
+    public Page<Author> getAuthors(int page, int size, String sortBy){
+        if(size > 100) size = 100;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return this.authorDAO.findAll(pageable);
     }
 
-    public Author findById(int id) {
-        Author found = null;
 
-        for (Author author : authors) {
-            if (author.getId() == id)
-                found = author;
-        }
-        if (found == null)
-            throw new NotFoundException(id);
-        return found;
+    public Author findById(int authorId) {
+        return this.authorDAO.findById(authorId).orElseThrow(() -> new NotFoundException(authorId));
     }
 
     public void findByIdAndDelete(int id) {
-        ListIterator<Author> iterator = this.authors.listIterator();
-
-        while (iterator.hasNext()) {
-            Author currentAuthor = iterator.next();
-            if (currentAuthor.getId() == id) {
-                iterator.remove();
-            }
-        }
+        Author found = this.findById(id);
+        this.authorDAO.delete(found);
     }
 
-    public Author findByIdAndUpdate(int id, Author author) {
-        Author found = null;
-
-        for (Author currentAuthor : authors) {
-            if (currentAuthor.getId() == id) {
-                found = currentAuthor;
-                found.setName(author.getName());
-                found.setSurname(author.getSurname());
-                found.setId(id);
-            }
-        }
-        if (found == null)
-            throw new NotFoundException(id);
-        return found;
+    public Author findByIdAndUpdate(int id, Author modifiedAuthor) {
+        Author found = this.findById(id);
+        found.setName(modifiedAuthor.getName());
+        found.setSurname(modifiedAuthor.getSurname());
+        found.setEmail(modifiedAuthor.getEmail());
+        found.setDateOfBirth(modifiedAuthor.getDateOfBirth());
+        found.setAvatar("https://ui-avatars.com/api/?name="+ modifiedAuthor.getName() + "+" + modifiedAuthor.getSurname());
+        return this.authorDAO.save(found);
 
     }
 }

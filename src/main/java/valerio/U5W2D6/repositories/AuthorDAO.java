@@ -5,7 +5,7 @@ import valerio.U5W2D6.entities.Author;
 
 import java.util.Optional;
 
-public interface AuthorDAO extends JpaRepository {
+public interface AuthorDAO extends JpaRepository<Author, Integer> {
 
     boolean existsByEmail (String email);
     Optional <Author> findByEmail(String email);
