@@ -4,8 +4,11 @@ package valerio.U5W2D6.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import valerio.U5W2D6.entities.Author;
+import valerio.U5W2D6.payloads.AuthorDTO;
 import valerio.U5W2D6.services.AuthorsService;
 
 import java.util.List;
@@ -19,9 +22,9 @@ public class AuthorsController {
     // 1. - POST http://localhost:3001/authors (+ req.body)
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED) // <-- 201
-    public Author saveAuthor(@RequestBody Author body) throws Exception {
-        System.out.println(body);
-        return authorsService.save(body);
+    public AuthorDTO saveAuthor(@RequestBody @Validated AuthorDTO authorDTO) throws Exception {
+        System.out.println(authorDTO);
+        return authorsService.save(authorDTO);
     }
 
     // 2. - GET http://localhost:3001/authors
@@ -38,7 +41,7 @@ public class AuthorsController {
 
     // 4. - PUT http://localhost:3001/authors/{id} (+ req.body)
     @PutMapping("/{authorId}")
-    public Author findAndUpdate(@PathVariable int authorId, @RequestBody Author body) throws Exception {
+    public AuthorDTO findAndUpdate(@PathVariable int authorId, @RequestBody AuthorDTO body) throws Exception {
         return authorsService.findByIdAndUpdate(authorId, body);
     }
 
@@ -47,5 +50,13 @@ public class AuthorsController {
     @ResponseStatus(HttpStatus.NO_CONTENT) // <-- 204 NO CONTENT
     public void findAndDelete(@PathVariable int authorId) {
         authorsService.findByIdAndDelete(authorId);
+    }
+
+    // 6. - POST http://localhost:3001/authors/uploadImg/authorId (+ req.body)
+
+    @PostMapping("/uploadImg/{authorId}")
+    public Author uploadImg(@RequestParam("avatar")MultipartFile avatar, @PathVariable int authorId) throws Exception {
+        return authorsService.findByIdAndUploadImg(authorId, avatar );
+
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import valerio.U5W2D6.entities.Blogpost;
 import valerio.U5W2D6.exceptions.NotFoundException;
+import valerio.U5W2D6.payloads.BlogPostDTO;
 import valerio.U5W2D6.repositories.BlogDAO;
 
 import java.util.ArrayList;
@@ -44,14 +45,15 @@ public class BlogsService {
         this.blogPostDAO.delete(found);
     }
 
-    public Blogpost findByIdAndUpdate(int id, Blogpost body) {
+    public BlogPostDTO findByIdAndUpdate(int id, BlogPostDTO body) {
         Blogpost found = this.findById(id);
-        found.setCover(body.getCover());
-        found.setTitle(body.getTitle());
-        found.setCategory(body.getCategory());
-        found.setContent(body.getContent());
-        found.setReadingTime(body.getReadingTime());
-        return found;
+        found.setCover(body.cover());
+        found.setTitle(body.title());
+        found.setCategory(body.category());
+        found.setContent(body.content());
+        found.setReadingTime(body.readingTime());
+        this.blogPostDAO.save(found);
+        return body;
 
     }
 }

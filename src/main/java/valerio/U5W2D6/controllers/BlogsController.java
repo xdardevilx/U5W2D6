@@ -4,15 +4,12 @@ package valerio.U5W2D6.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import valerio.U5W2D6.entities.Author;
-import valerio.U5W2D6.entities.BlogPostPayload;
 import valerio.U5W2D6.entities.Blogpost;
+import valerio.U5W2D6.payloads.BlogPostDTO;
 import valerio.U5W2D6.services.AuthorsService;
 import valerio.U5W2D6.services.BlogsService;
-
-import java.awt.print.Pageable;
-import java.util.List;
 
 @RestController
 @RequestMapping("/blogs")
@@ -25,15 +22,17 @@ public class BlogsController {
     // 1. - POST http://localhost:3001/blogs (+ req.body)
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED) // <-- 201
-    public Blogpost saveBlog(@RequestBody BlogPostPayload payload) {
+    public BlogPostDTO saveBlog(@RequestBody  @Validated BlogPostDTO payload) {
         Blogpost newBlogPost = new Blogpost();
-        newBlogPost.setCategory(payload.getCategory());
-        newBlogPost.setTitle(payload.getTitle());
-        newBlogPost.setCover(payload.getCover());
-        newBlogPost.setContent(payload.getContent());
-        newBlogPost.setReadingTime(payload.getReadingTime());
-        newBlogPost.setAuthor(authorsService.findById(payload.getIdAuthor()));
-        return blogsService.save(newBlogPost);
+        newBlogPost.setCategory(payload.category());
+        newBlogPost.setTitle(payload.title());
+        newBlogPost.setCover(payload.cover());
+        newBlogPost.setContent(payload.content());
+        newBlogPost.setReadingTime(payload.readingTime());
+        newBlogPost.setAuthor(authorsService.findById(payload.idAuthor()));
+        blogsService.save(newBlogPost);
+        return payload;
+
     }
 
     // 2. - GET http://localhost:3001/blogs
@@ -50,7 +49,7 @@ public class BlogsController {
 
     // 4. - PUT http://localhost:3001/blogs/{id} (+ req.body)
     @PutMapping("/{blogId}")
-    public Blogpost findAndUpdate(@PathVariable int blogId, @RequestBody Blogpost body) {
+    public BlogPostDTO findAndUpdate(@PathVariable int blogId, @RequestBody BlogPostDTO body) {
         return blogsService.findByIdAndUpdate(blogId, body);
     }
 

@@ -1,36 +1,42 @@
 package valerio.U5W2D6.services;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import valerio.U5W2D6.entities.Author;
-import valerio.U5W2D6.exceptions.BadRequestExcepition;
+import valerio.U5W2D6.exceptions.BadRequestException;
 import valerio.U5W2D6.exceptions.NotFoundException;
+import valerio.U5W2D6.payloads.AuthorDTO;
 import valerio.U5W2D6.repositories.AuthorDAO;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Random;
+import java.io.IOException;
 
 @Service
 public class AuthorsService {
     @Autowired
     private AuthorDAO authorDAO;
 
+    @Autowired
+    private Cloudinary upImg;
+
 //    private final List<Author> authors = new ArrayList<>();
 
-    public Author save(Author newAuthor) {
-        this.authorDAO.findByEmail(newAuthor.getEmail()).ifPresent(
+    public AuthorDTO save(AuthorDTO newAuthor) {
+        this.authorDAO.findByEmail(newAuthor.email()).ifPresent(
                 author -> {
-                    throw new BadRequestExcepition("L'email " + newAuthor.getEmail() + " è già in uso!");
+                    throw new BadRequestException("L'email " + newAuthor.email() + " è già in uso!");
                 }
         );
-        newAuthor.setAvatar("https://ui-avatars.com/api/?name="+ newAuthor.getName() + "+" + newAuthor.getSurname());
-        this.authorDAO.save(newAuthor);
+
+        Author author = new Author(newAuthor.name(), newAuthor.surname(), newAuthor.email(), newAuthor.birthDate(), newAuthor.avatar());
+        author.setAvatar("https://ui-avatars.com/api/?name="+ newAuthor.name() + "+" + newAuthor.surname());
+        this.authorDAO.save(author);
         return newAuthor;
     }
 
@@ -50,14 +56,23 @@ public class AuthorsService {
         this.authorDAO.delete(found);
     }
 
-    public Author findByIdAndUpdate(int id, Author modifiedAuthor) {
+    public AuthorDTO findByIdAndUpdate(int id, AuthorDTO modifiedAuthor) {
         Author found = this.findById(id);
-        found.setName(modifiedAuthor.getName());
-        found.setSurname(modifiedAuthor.getSurname());
-        found.setEmail(modifiedAuthor.getEmail());
-        found.setDateOfBirth(modifiedAuthor.getDateOfBirth());
-        found.setAvatar("https://ui-avatars.com/api/?name="+ modifiedAuthor.getName() + "+" + modifiedAuthor.getSurname());
-        return this.authorDAO.save(found);
+        found.setName(modifiedAuthor.name());
+        found.setSurname(modifiedAuthor.surname());
+        found.setEmail(modifiedAuthor.email());
+        found.setDateOfBirth(modifiedAuthor.birthDate());
+        found.setAvatar("https://ui-avatars.com/api/?name="+ modifiedAuthor.name() + "+" + modifiedAuthor.surname());
+       this.authorDAO.save(found);
+        return modifiedAuthor;
 
+    }
+
+    public Author findByIdAndUploadImg(int authorId, MultipartFile avatar) throws IOException {
+        Author found= this.findById(authorId);
+        String url = (String) upImg.uploader().upload(avatar.getBytes(), ObjectUtils.emptyMap()).get("url");
+        found.setAvatar(url);
+        this.authorDAO.save(found);
+        return found;
     }
 }

@@ -28,4 +28,13 @@ public class Author {
     @OneToMany(mappedBy = "author")
     @JsonIgnore
     private List<Blogpost> blogposts;
+
+    public Author( String name, String surname, String email, String dateOfBirth, String avatar) {
+
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.dateOfBirth = dateOfBirth;
+        this.avatar = avatar;
+    }
 }

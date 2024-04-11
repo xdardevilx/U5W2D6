@@ -22,6 +22,7 @@ public class Blogpost {
     private String content;
     private double readingTime;
 
+
     @ManyToOne
     private Author author;
 }
